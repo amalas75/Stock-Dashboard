@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 실시간 복합 주식 트렌드 대시보드</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Noto Sans KR', sans-serif; }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #1f2937; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #3b82f6; border-radius: 10px; }
+        /* 자동완성 드롭다운이 다른 섹션에 가려지지 않도록 */
+        #search-section { overflow: visible; z-index: 100; position: relative; }
+        #autocomplete-list {
+            display: none;
+            position: absolute;
+            top: calc(100% + 0.5rem);
+            left: 0;
+            right: 0;
+            z-index: 9999;
+        }
+        #autocomplete-list.is-open { display: block; }
+    </style>
+</head>
+<body class="bg-gray-950 text-gray-100 min-h-screen flex flex-col space-y-6 pb-12">
+
+    <header class="bg-gray-900 border-b border-gray-800 px-6 py-4 flex justify-between items-center shadow-lg sticky top-0 z-40">
+        <div class="flex items-center space-x-3">
+            <span class="text-2xl">⚡</span>
+            <h1 class="text-xl font-bold text-white tracking-wide">AI Multi-Trend Stock Dashboard</h1>
+        </div>
+        <div class="flex items-center space-x-2 text-sm bg-gray-800 px-3 py-1.5 rounded-full text-emerald-400 font-medium">
+            <span class="animate-pulse h-2 w-2 rounded-full bg-emerald-400"></span>
+            <span>TOP10 갱신: <span id="timer">4분 55초</span></span>
+        </div>
+    </header>
+
+    <section class="bg-gray-900/50 border-y border-gray-800 px-6 py-3 flex flex-wrap items-center justify-between text-sm mx-6 rounded-xl">
+        <div class="flex items-center space-x-6 overflow-x-auto" id="market-index-container"></div>
+        <div class="text-xs text-gray-400 flex items-center space-x-1">
+            <span class="inline-block w-1.5 h-1.5 rounded-full bg-blue-400 animate-ping"></span>
+            <span>시황 데이터 1분 주기 동기화 완료</span>
+        </div>
+    </section>
+
+    <section id="search-section" class="mx-6">
+        <div class="max-w-xl relative overflow-visible">
+            <div class="flex space-x-2">
+                <div class="relative flex-1 overflow-visible">
+                    <input type="text" id="stock-search-input" autocomplete="off" placeholder="종목의 일부를 입력 후 드롭다운에서 선택하세요 (예: 현대, Tiger, 삼성...)" class="w-full bg-gray-900 border border-gray-800 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-all">
+                    <div id="autocomplete-list" class="bg-gray-900 border border-gray-700 rounded-xl max-h-60 overflow-y-auto shadow-2xl custom-scrollbar"></div>
+                </div>
+                <button onclick="executeSearch()" class="bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold px-5 py-3 rounded-xl transition-all cursor-pointer">검색</button>
+            </div>
+        </div>
+    </section>
+
+    <section id="search-result-board" class="mx-6 hidden relative z-10">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 bg-gradient-to-b from-gray-900 to-gray-950 p-6 rounded-2xl border border-blue-500/50 shadow-2xl">
+            
+            <div class="flex flex-col justify-between space-y-4 bg-gray-950 p-5 rounded-xl border border-gray-800">
+                <div class="flex items-center justify-between">
+                    <h3 id="res-stock-name" class="text-2xl font-bold text-white">종목명</h3>
+                    <span id="res-stock-category" class="text-[10px] bg-blue-600/20 text-blue-400 px-2 py-1 rounded">분류</span>
+                </div>
+                
+                <div class="space-y-3 pt-1">
+                    <div class="flex justify-between items-center"><span class="text-gray-400 text-xs">실시간 현재가</span><span id="res-stock-price" class="text-base font-bold text-white">0원</span></div>
+                    <div class="flex justify-between items-center"><span class="text-gray-400 text-xs">전일대비 변동</span><span id="res-stock-change" class="text-base font-bold">0 | 0.00%</span></div>
+                    <div class="flex justify-between items-center"><span class="text-gray-400 text-xs">AI 소셜 가치점수</span><span id="res-stock-score" class="text-base font-bold text-emerald-400">0점</span></div>
+                </div>
+
+                <div class="pt-3 border-t border-gray-900">
+                    <a id="res-chart-link" href="#" target="_blank" class="block w-full text-center bg-blue-600/10 hover:bg-blue-600/20 text-blue-400 hover:text-blue-300 text-xs font-bold py-3.5 rounded-xl transition-all border border-blue-500/30 shadow-md">
+                        📊 실시간 차트보기 (네이버 금융)
+                    </a>
+                </div>
+            </div>
+            
+            <div class="flex flex-col h-[260px]">
+                <h4 class="text-sm font-bold text-blue-400 mb-3 flex items-center">📰 관련 실시간 뉴스</h4>
+                <div id="res-news-list" class="flex-1 overflow-y-auto space-y-2 pr-1 custom-scrollbar"></div>
+            </div>
+            
+            <div class="flex flex-col h-[260px]">
+                <h4 class="text-sm font-bold text-blue-400 mb-3 flex items-center">💬 Google 뉴스 · YouTube 피드</h4>
+                <div id="res-sns-list" class="flex-1 overflow-y-auto space-y-2 pr-1 custom-scrollbar"></div>
+            </div>
+            
+        </div>
+    </section>
+
+    <div class="px-6">
+        <div class="border-l-4 border-blue-500 pl-3 mb-4">
+            <h2 class="text-xl font-bold text-white">🔥 종합 실시간 투자가치 TOP 10 (대형/주요주)</h2>
+            <p class="text-xs text-gray-400 mt-0.5">거래대금·등락률·Google·YouTube 감성 · <span id="main-updated-at">갱신 대기</span></p>
+        </div>
+        <main class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <section class="bg-gray-900 rounded-2xl p-5 border border-gray-800 h-[400px] flex flex-col shadow-inner">
+                <div class="flex-1 overflow-y-auto space-y-2 pr-1 custom-scrollbar" id="main-stock-list"></div>
+            </section>
+            <section class="bg-gray-900 rounded-2xl p-5 border border-gray-800 h-[400px] flex flex-col">
+                <h3 class="text-sm font-bold text-blue-400 mb-3">📰 <span id="main-news-title">종목</span> 관련 실시간 뉴스</h3>
+                <div id="main-news-list" class="flex-1 overflow-y-auto space-y-2 pr-1 custom-scrollbar"></div>
+            </section>
+            <section class="bg-gray-900 rounded-2xl p-5 border border-gray-800 h-[400px] flex flex-col">
+                <h3 class="text-sm font-bold text-blue-400 mb-3">💬 <span id="main-sns-title">종목</span> Google·YouTube 동향</h3>
+                <div id="main-sns-list" class="flex-1 overflow-y-auto space-y-2 pr-1 custom-scrollbar"></div>
+            </section>
+        </main>
+    </div>
+
+    <div class="px-6">
+        <div class="border-l-4 border-amber-500 pl-3 mb-4">
+            <h2 class="text-xl font-bold text-white">💰 주당 3만 원 이하 가성비 투자가치 TOP 10</h2>
+            <p class="text-xs text-gray-400 mt-0.5">거래대금·모멘텀·Google·YouTube 감성 · <span id="sub-updated-at">갱신 대기</span></p>
+        </div>
+        <main class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <section class="bg-gray-900 rounded-2xl p-5 border border-gray-800 h-[400px] flex flex-col">
+                <div class="flex-1 overflow-y-auto space-y-2 pr-1 custom-scrollbar" id="sub-stock-list"></div>
+            </section>
+            <section class="bg-gray-900 rounded-2xl p-5 border border-gray-800 h-[400px] flex flex-col">
+                <h3 class="text-sm font-bold text-amber-400 mb-3">📰 <span id="sub-news-title">종목</span> 관련 실시간 뉴스</h3>
+                <div id="sub-news-list" class="flex-1 overflow-y-auto space-y-2 pr-1 custom-scrollbar"></div>
+            </section>
+            <section class="bg-gray-900 rounded-2xl p-5 border border-gray-800 h-[400px] flex flex-col">
+                <h3 class="text-sm font-bold text-amber-400 mb-3">💬 <span id="sub-sns-title">종목</span> Google·YouTube 동향</h3>
+                <div id="sub-sns-list" class="flex-1 overflow-y-auto space-y-2 pr-1 custom-scrollbar"></div>
+            </section>
+        </main>
+    </div>
+
+    <div id="stock-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center hidden z-50 p-4">
+        <div class="bg-gray-900 border border-gray-800 rounded-2xl w-full max-w-lg p-6 relative shadow-2xl">
+            <button onclick="closeModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white text-xl">✕</button>
+            <div id="modal-content"></div>
+        </div>
+    </div>
+
+    <script>
+                // const API_BASE = window.location.origin.includes('http') ? window.location.origin : 'http://127.0.0.1:8000';
+        const API_BASE = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost'
+            ? 'http://127.0.0.1:8000'
+            : window.location.origin;
+        const RANKING_REFRESH_SEC = 300;
+        let selectedMainStock = "";
+        let selectedSubStock = "";
+        let autocompleteTimer = null;
+
+        function showAutocomplete(messageHtml) {
+            const list = document.getElementById('autocomplete-list');
+            list.innerHTML = messageHtml;
+            list.classList.add('is-open');
+        }
+
+        function hideAutocomplete() {
+            const list = document.getElementById('autocomplete-list');
+            list.classList.remove('is-open');
+            list.innerHTML = '';
+        }
+
+        async function init() {
+            await renderMarketIndex();
+            await renderMainStockList();
+            await renderSubStockList();
+            startTimer();
+            setInterval(renderMarketIndex, 60000);
+            setInterval(() => { renderMainStockList(); renderSubStockList(); }, RANKING_REFRESH_SEC * 1000);
+        }
+
+        async function renderMarketIndex() {
+            const container = document.getElementById('market-index-container');
+            try {
+                const res = await fetch(`${API_BASE}/api/market`);
+                const data = await res.json();
+                if(data.kospi) {
+                    const kColor = data.kospi.change.includes('▼') ? 'text-blue-400' : 'text-red-400';
+                    container.innerHTML = `
+                        <div class="flex items-center space-x-2"><span class="text-gray-400 font-medium">코스피</span><span class="text-white font-bold">${data.kospi.val}</span><span class="${kColor} text-xs font-bold">${data.kospi.change}</span></div>
+                        <div class="h-4 w-px bg-gray-800"></div>
+                        <div class="flex items-center space-x-2"><span class="text-gray-400 font-medium">코스닥</span><span class="text-white font-bold">${data.kosdaq.val}</span><span class="text-blue-400 text-xs font-bold">${data.kosdaq.change}</span></div>
+                        <div class="h-4 w-px bg-gray-800"></div>
+                        <div class="flex items-center space-x-2"><span class="text-gray-400 font-medium">원/달러 환율</span><span class="text-emerald-400 font-bold">${data.usd.val}</span></div>
+                    `;
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        function handleSearchInput(value) {
+            const searchVal = value.trim();
+            if (autocompleteTimer) clearTimeout(autocompleteTimer);
+
+            if (!searchVal) {
+                hideAutocomplete();
+                return;
+            }
+
+            showAutocomplete(`<div class="px-4 py-2.5 text-xs text-gray-500">네이버 증권 검색 중...</div>`);
+            autocompleteTimer = setTimeout(() => fetchAutocomplete(searchVal), 250);
+        }
+
+        async function fetchAutocomplete(searchVal) {
+            try {
+                const res = await fetch(`${API_BASE}/api/search/autocomplete?keyword=${encodeURIComponent(searchVal)}`);
+                if (!res.ok) throw new Error('API 오류');
+
+                const matchedStocks = await res.json();
+
+                if (!matchedStocks || matchedStocks.length === 0) {
+                    showAutocomplete(`
+                        <div class="px-4 py-3 text-xs text-amber-400 leading-relaxed">
+                            검색 결과가 없습니다.<br>
+                            · 2글자 이상 입력 (예: 삼성, 현대)<br>
+                            · 서버 재시작: <b>uvicorn server:app --reload</b>
+                        </div>
+                    `);
+                    return;
+                }
+
+                const listContainer = document.getElementById('autocomplete-list');
+                listContainer.innerHTML = '';
+
+                matchedStocks.forEach(stock => {
+                    const div = document.createElement('div');
+                    const market = stock.market ? stock.market.toUpperCase() : 'STOCK';
+                    div.className = "px-4 py-2.5 text-sm text-gray-300 hover:bg-blue-600/50 hover:text-white cursor-pointer transition-colors flex justify-between items-center border-b border-gray-800 bg-gray-900";
+                    div.innerHTML = `
+                        <div>
+                            <span class="font-medium text-white">${stock.name}</span>
+                            <span class="block text-[10px] text-gray-500 mt-0.5">네이버 증권 · ${market}</span>
+                        </div>
+                        <span class="text-xs text-gray-400 font-mono">${stock.code}</span>
+                    `;
+
+                    div.addEventListener('mousedown', function(e) {
+                        e.preventDefault();
+                        document.getElementById('stock-search-input').value = stock.name;
+                        hideAutocomplete();
+                        executeSearch(stock.name, stock.code);
+                    });
+                    listContainer.appendChild(div);
+                });
+                listContainer.classList.add('is-open');
+            } catch (e) {
+                console.error(e);
+                showAutocomplete(`
+                    <div class="px-4 py-3 text-xs text-rose-400 leading-relaxed">
+                        서버 연결 실패<br>
+                        터미널에서 <b>uvicorn server:app --reload</b> 실행 후<br>
+                        <b>http://127.0.0.1:8000/</b> 로 접속하세요.
+                    </div>
+                `);
+            }
+        }
+
+        async function executeSearch(forcedName = null, forcedCode = null) {
+            const input = document.getElementById('stock-search-input');
+            const name = forcedName ? forcedName : input.value.trim();
+            const code = forcedCode ? forcedCode : "";
+            if (!name) return;
+            
+            try {
+                const params = new URLSearchParams({ name });
+                if (code) params.set('code', code);
+                const res = await fetch(`${API_BASE}/api/search/stock?${params.toString()}`);
+                const data = await res.json();
+                
+                if (!data || data.success === false) {
+                    alert(data?.message || "조회 실패: 종목을 찾지 못했습니다. 드롭다운에서 선택해 주세요.");
+                    return;
+                }
+                
+                document.getElementById('res-stock-name').innerText = data.name;
+                document.getElementById('res-stock-price').innerText = data.price;
+                const changeTarget = document.getElementById('res-stock-change');
+                changeTarget.innerText = data.change;
+                
+                if (data.change.includes('▼')) {
+                    changeTarget.className = "text-base font-bold text-blue-400";
+                } else {
+                    changeTarget.className = "text-base font-bold text-red-400";
+                }
+                
+                document.getElementById('res-stock-score').innerText = `${data.ai_score}점`;
+                
+                const chartLink = document.getElementById('res-chart-link');
+                if (chartLink && data.code) {
+                    chartLink.href = `https://finance.naver.com/item/main.naver?code=${data.code}`;
+                }
+
+                const priceNum = Number(data.price.replace(/,/g, '').replace('원', '')) || 0;
+                const isSub = priceNum <= 30000;
+                document.getElementById('res-stock-category').innerText = isSub ? "소형 가성비주" : "종합 대형주";
+
+                await fetchColumnContent(data.name, 'res', data.code);
+                
+                const resultBoard = document.getElementById('search-result-board');
+                if (resultBoard) {
+                    resultBoard.style.display = 'block';
+                    resultBoard.classList.remove('hidden');
+                }
+            } catch (e) { 
+                alert("서버 통신 실패");
+                console.error(e); 
+            }
+        }
+
+        async function fetchColumnContent(name, layerPrefix, stockCode = '') {
+            const params = new URLSearchParams({ name });
+            if (stockCode) params.set('code', stockCode);
+
+            try {
+                const resNews = await fetch(`${API_BASE}/api/stocks/news?${params.toString()}`);
+                const news = await resNews.json();
+                const container = document.getElementById(`${layerPrefix}-news-list`);
+                if(container) {
+                    container.innerHTML = news.map(item => `
+                        <a href="${item.link}" target="_blank" class="block p-2.5 bg-gray-900 border border-gray-800 rounded-xl hover:border-blue-500 transition-all">
+                            <h4 class="text-xs font-medium text-gray-200 line-clamp-1 hover:text-blue-400">${item.title}</h4>
+                            <p class="text-[10px] text-gray-500 mt-1">${item.press} • ${item.time}</p>
+                        </a>`).join('');
+                }
+            } catch(e){}
+
+            try {
+                const res = await fetch(`${API_BASE}/api/stocks/sns?${params.toString()}`);
+                const sns = await res.json();
+                const container = document.getElementById(`${layerPrefix}-sns-list`);
+                if(container) {
+                    container.innerHTML = sns.map(item => {
+                        const border = item.sentiment === 'positive' ? 'border-emerald-500/30' : item.sentiment === 'negative' ? 'border-rose-500/30' : 'border-gray-700';
+                        const inner = `
+                            <div class="flex justify-between text-[10px] text-gray-400 mb-0.5">
+                                <span>${item.user || ''}</span>
+                                <span class="text-blue-400/80">${item.type || ''}</span>
+                            </div>
+                            <p class="text-xs text-gray-300 line-clamp-2">${item.content || ''}</p>
+                            ${item.time ? `<p class="text-[10px] text-gray-600 mt-0.5">${item.time}</p>` : ''}`;
+                        if (item.link) {
+                            return `<a href="${item.link}" target="_blank" rel="noopener" class="block p-2.5 bg-gray-900 border ${border} rounded-xl hover:border-blue-500/50 transition-all">${inner}</a>`;
+                        }
+                        return `<div class="p-2.5 bg-gray-900 border ${border} rounded-xl">${inner}</div>`;
+                    }).join('');
+                }
+            } catch(e){}
+        }
+
+        function createCard(stock, isSelected, color) {
+            const card = document.createElement('div');
+            card.className = `p-3 mb-2 rounded-xl cursor-pointer transition-all border ${isSelected ? `bg-gray-800 border-${color}-500 shadow-md` : 'bg-gray-900 border-gray-800 hover:border-gray-700'}`;
+            card.innerHTML = `
+                <div class="flex items-center justify-between">
+                    <div>
+                        <span class="font-medium text-white text-sm block">${stock.name}</span>
+                        <span class="text-[11px] text-gray-400">${stock.price} <span class="text-gray-600">| ${stock.ai_score}점</span></span>
+                    </div>
+                    <span class="px-2 py-0.5 rounded text-xs font-bold ${stock.status === 'up' ? 'text-red-400 bg-red-500/10' : 'text-blue-400 bg-blue-500/10'}">${stock.change}</span>
+                </div>`;
+            return card;
+        }
+
+        async function renderMainStockList() {
+            const container = document.getElementById('main-stock-list');
+            try {
+                const res = await fetch(`${API_BASE}/api/stocks/top10`);
+                const data = await res.json();
+                const stocks = data.items || data;
+                if (data.updated_at) {
+                    document.getElementById('main-updated-at').innerText = `마지막 갱신 ${data.updated_at}`;
+                }
+                if(stocks.length === 0) return;
+                if(!selectedMainStock) selectedMainStock = stocks[0].name;
+                
+                container.innerHTML = '';
+                stocks.forEach(stock => {
+                    const card = createCard(stock, stock.name === selectedMainStock, 'blue');
+                    card.onclick = () => { selectedMainStock = stock.name; renderMainStockList(); };
+                    card.ondblclick = () => openModal(stock.name, stock.price, stock.change, '종합 대형 우량주', stock.ai_score, stock.code);
+                    container.appendChild(card);
+                });
+                document.getElementById('main-news-title').innerText = selectedMainStock;
+                document.getElementById('main-sns-title').innerText = selectedMainStock;
+                fetchColumnContent(selectedMainStock, 'main');
+            } catch (e) { console.error(e); }
+        }
+
+        async function renderSubStockList() {
+            const container = document.getElementById('sub-stock-list');
+            try {
+                const res = await fetch(`${API_BASE}/api/stocks/under30k`);
+                const data = await res.json();
+                const stocks = data.items || data;
+                if (data.updated_at) {
+                    document.getElementById('sub-updated-at').innerText = `마지막 갱신 ${data.updated_at}`;
+                }
+                if(stocks.length === 0) return;
+                if(!selectedSubStock) selectedSubStock = stocks[0].name;
+                
+                container.innerHTML = '';
+                stocks.forEach(stock => {
+                    const card = createCard(stock, stock.name === selectedSubStock, 'amber');
+                    card.onclick = () => { selectedSubStock = stock.name; renderSubStockList(); };
+                    card.ondblclick = () => openModal(stock.name, stock.price, stock.change, '소형 성장 가성비주', stock.ai_score, stock.code);
+                    container.appendChild(card);
+                });
+                document.getElementById('sub-news-title').innerText = selectedSubStock;
+                document.getElementById('sub-sns-title').innerText = selectedSubStock;
+                fetchColumnContent(selectedSubStock, 'sub');
+            } catch (e) { console.error(e); }
+        }
+
+        async function openModal(name, price, change, category, aiScore, stockCode = '') {
+            const modal = document.getElementById('stock-modal');
+            const content = document.getElementById('modal-content');
+
+            let code = stockCode || '';
+            if (!code) {
+                try {
+                    const params = new URLSearchParams({ name });
+                    const res = await fetch(`${API_BASE}/api/search/stock?${params.toString()}`);
+                    const data = await res.json();
+                    if (data.success && data.code) code = data.code;
+                } catch (e) { console.error(e); }
+            }
+
+            const chartHref = code
+                ? `https://finance.naver.com/item/main.naver?code=${code}`
+                : '#';
+            const chartDisabled = code ? '' : 'pointer-events-none opacity-40';
+
+            const changeClass = change.includes('▼') ? 'text-blue-400' : 'text-red-400';
+
+            content.innerHTML = `
+                <div class="space-y-4">
+                    <h3 class="text-xl font-bold text-white">${name} <span class="text-xs text-gray-400">${category} 상세분석</span></h3>
+                    <div class="grid grid-cols-3 gap-2 text-center text-xs bg-gray-800 p-3 rounded-xl border border-gray-700">
+                        <div><span class="text-gray-500 block">가격</span><span class="text-sm font-bold text-white">${price}</span></div>
+                        <div><span class="text-gray-500 block">전일대비 변동</span><span class="text-sm font-bold ${changeClass}">${change}</span></div>
+                        <div><span class="text-gray-500 block">AI점수</span><span class="text-sm font-bold text-emerald-400">${aiScore}점</span></div>
+                    </div>
+                    <div class="pt-3 border-t border-gray-800">
+                        <a href="${chartHref}" target="_blank" class="block w-full text-center bg-blue-600/10 hover:bg-blue-600/20 text-blue-400 hover:text-blue-300 text-xs font-bold py-3.5 rounded-xl transition-all border border-blue-500/30 shadow-md ${chartDisabled}">
+                            📊 실시간 차트보기 (네이버 금융)
+                        </a>
+                    </div>
+                </div>`;
+            modal.classList.remove('hidden');
+        }
+
+        function closeModal() { document.getElementById('stock-modal').classList.add('hidden'); }
+
+        function startTimer() {
+            let distance = RANKING_REFRESH_SEC;
+            setInterval(function() {
+                let m = Math.floor(distance / 60); let s = Math.floor(distance % 60);
+                document.getElementById("timer").innerHTML = m + "분 " + s + "초 ";
+                if (--distance < 0) {
+                    distance = RANKING_REFRESH_SEC;
+                    renderMainStockList();
+                    renderSubStockList();
+                }
+            }, 1000);
+        }
+
+        document.getElementById('stock-search-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') { executeSearch(); }
+        });
+
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('#search-section')) {
+                hideAutocomplete();
+            }
+        });
+
+        document.getElementById('stock-search-input').addEventListener('input', function(e) {
+            handleSearchInput(e.target.value);
+        });
+
+        window.onload = init;
+    </script>
+</body>
+</html>
