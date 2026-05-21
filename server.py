@@ -913,24 +913,44 @@ def fetch_naver_search_page(keyword: str, limit: int = 15):
     if not kw:
         return []
 
+
     try:
-        # 🎯 [핵심 수술] 어떤 단어를 쳐도 리디렉션 없이 전 종목 코드를 정직하게 뱉어내는 모바일 웹 검색 세션 타격
-        url = "https://m.stock.naver.com/api/json/search/searchListJson.nhn"
-        params = {
-            "keyword": kw,
-            "menuType": "KEYWORD"
-        }
-        res = requests.get(url, params=params, headers=headers, timeout=5)
+        # 🎯 [인코딩 방어선] 한글 단어(남광, 롯데 등)가 깨지지 않도록 정밀 인코딩 처리
+        encoded_keyword = requests.utils.quote(kw)
+        url = f"https://m.stock.naver.com/api/json/search/searchListJson.nhn?keyword={encoded_keyword}&menuType=KEYWORD"
+        
+        # 브라우저인 척 속이는 헤더 고정 타격
+        res = requests.get(url, headers=headers, timeout=5)
         res.raise_for_status()
         data = res.json()
 
         results = []
-        # 네이버 공식 JSON 데이터 트리 구조 진입 파싱
         stocks = (
             data.get("result", {}).get("list", [])
             or data.get("result", {}).get("itemList", [])
             or data.get("items", [])
         )
+
+
+
+    # try:
+    #     # 🎯 [핵심 수술] 어떤 단어를 쳐도 리디렉션 없이 전 종목 코드를 정직하게 뱉어내는 모바일 웹 검색 세션 타격
+    #     url = "https://m.stock.naver.com/api/json/search/searchListJson.nhn"
+    #     params = {
+    #         "keyword": kw,
+    #         "menuType": "KEYWORD"
+    #     }
+    #     res = requests.get(url, params=params, headers=headers, timeout=5)
+    #     res.raise_for_status()
+    #     data = res.json()
+
+    #     results = []
+    #     # 네이버 공식 JSON 데이터 트리 구조 진입 파싱
+    #     stocks = (
+    #         data.get("result", {}).get("list", [])
+    #         or data.get("result", {}).get("itemList", [])
+    #         or data.get("items", [])
+    #     )
         
         seen = set()
         for s in stocks:
