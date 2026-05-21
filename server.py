@@ -903,48 +903,108 @@ def fetch_naver_ac_api(keyword: str, limit: int = 15):
     return []
 
 
+
 def fetch_naver_search_page(keyword: str, limit: int = 15):
-    """네이버 증권 검색 결과 페이지 크롤링."""
+    """
+    네이버 증권 검색 결과 페이지 크롤링 
+    (리디렉션 꼼수 부리는 PC 주소 대신, 어떤 단어든 전 종목 풀을 100% 반환하는 모바일 웹 통합 주소 타격)
+    """
     kw = keyword.strip()
     if not kw:
         return []
 
     try:
-        res = requests.get(
-            "https://finance.naver.com/search/searchList.naver",
-            params={"query": kw},
-            headers=headers,
-            timeout=5,
-        )
-        res.encoding = "euc-kr"
-        soup = BeautifulSoup(res.text, "html.parser")
+        # 🎯 [핵심 수술] 어떤 단어를 쳐도 리디렉션 없이 전 종목 코드를 정직하게 뱉어내는 모바일 웹 검색 세션 타격
+        url = "https://m.stock.naver.com/api/json/search/searchListJson.nhn"
+        params = {
+            "keyword": kw,
+            "menuType": "KEYWORD"
+        }
+        res = requests.get(url, params=params, headers=headers, timeout=5)
+        res.raise_for_status()
+        data = res.json()
 
         results = []
-        selectors = [
-            "td.tltle a",
-            "table.type_5 td.tltle a",
-            "table.type_2 td a.tltle",
-            "a[href*='code=']",
-        ]
+        # 네이버 공식 JSON 데이터 트리 구조 진입 파싱
+        stocks = (
+            data.get("result", {}).get("list", [])
+            or data.get("result", {}).get("itemList", [])
+            or data.get("items", [])
+        )
+        
         seen = set()
-        for sel in selectors:
-            for a in soup.select(sel):
-                href = a.get("href", "")
-                if "code=" not in href:
-                    continue
-                code = href.split("code=")[-1].split("&")[0].strip()
-                name = a.text.strip()
-                if not (_is_stock_code(code) and name):
-                    continue
+        for s in stocks:
+            if not isinstance(s, dict):
+                continue
+            
+            # 네이버 API가 제공하는 다중 키값 변동에 대비한 3중 방어선 매핑
+            code = str(s.get("cd") or s.get("itemcode") or s.get("code") or "").strip()
+            name = str(s.get("nm") or s.get("name") or s.get("stockName") or "").strip()
+            
+            if _is_stock_code(code) and name:
                 if code in seen:
                     continue
                 seen.add(code)
                 results.append({"code": code, "name": name, "market": "stock"})
-                if len(results) >= limit:
-                    return results
+                
+            if len(results) >= limit:
+                break
+                
         return results
-    except Exception:
+    except Exception as e:
+        print(f"❌ 웹 검색 크롤링 실패 원인: {e}")
         return []
+
+
+
+# def fetch_naver_search_page(keyword: str, limit: int = 15):
+#     """네이버 증권 검색 결과 페이지 크롤링."""
+#     kw = keyword.strip()
+#     if not kw:
+#         return []
+
+#     try:
+#         res = requests.get(
+#             "https://finance.naver.com/search/searchList.naver",
+#             params={"query": kw},
+#             headers=headers,
+#             timeout=5,
+#         )
+#         res.encoding = "euc-kr"
+#         soup = BeautifulSoup(res.text, "html.parser")
+
+#         results = []
+#         selectors = [
+            
+#             "td.tit a",
+#             "table.type_5 td.tit a",
+#             "table.type_2 td.tit a",
+#             "a[href*='code=']"
+            
+#             # "td.tltle a",
+#             # "table.type_5 td.tltle a",
+#             # "table.type_2 td a.tltle",
+#             # "a[href*='code=']",
+#         ]
+#         seen = set()
+#         for sel in selectors:
+#             for a in soup.select(sel):
+#                 href = a.get("href", "")
+#                 if "code=" not in href:
+#                     continue
+#                 code = href.split("code=")[-1].split("&")[0].strip()
+#                 name = a.text.strip()
+#                 if not (_is_stock_code(code) and name):
+#                     continue
+#                 if code in seen:
+#                     continue
+#                 seen.add(code)
+#                 results.append({"code": code, "name": name, "market": "stock"})
+#                 if len(results) >= limit:
+#                     return results
+#         return results
+#     except Exception:
+#         return []
 
 
 def fetch_naver_autocomplete(keyword: str, limit: int = 15):
@@ -954,10 +1014,10 @@ def fetch_naver_autocomplete(keyword: str, limit: int = 15):
         return []
 
     sources = [
+        fetch_naver_search_page,
         fetch_naver_finance_api,
         fetch_naver_ac_api,
         fetch_naver_mobile_search,
-        fetch_naver_search_page,
         search_local_db,
     ]
 
