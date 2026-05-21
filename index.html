@@ -472,9 +472,11 @@
         function startTimer() {
             let distance = RANKING_REFRESH_SEC;
             setInterval(function() {
-                let m = Math.floor(distance / 60); let s = Math.floor(distance % 60);
+                let m = Math.floor(distance / 60);
+                let s = Math.floor(distance % 60);
+                let paddedS = s < 10 ? '0' + s : s;
                 
-                document.getElementById("timer").innerHTML = `${m}'${paddedS}"`;
+                document.getElementById("timer").innerHTML = m + "'" + paddedS + '"';
                 // document.getElementById("timer").innerHTML = m + "분 " + s + "초 ";
                 
                 if (--distance < 0) {
