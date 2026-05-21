@@ -96,7 +96,7 @@
                 </div>
                 
                 <div class="space-y-3 pt-1">
-                    <div class="flex justify-between items-center"><span class="text-gray-400 text-xs">실시간 현재가</span><span id="res-stock-price" class="text-base font-bold text-white">0원</span></div>
+                    <div class="flex justify-between items-center"><span class="text-gray-400 text-xs">정규장 현재가(KRX)</span><span id="res-stock-price" class="text-base font-bold text-white">0원</span></div>
                     <div class="flex justify-between items-center"><span class="text-gray-400 text-xs">전일대비 변동</span><span id="res-stock-change" class="text-base font-bold">0 | 0.00%</span></div>
                     <div class="flex justify-between items-center"><span class="text-gray-400 text-xs">AI 소셜 가치점수</span><span id="res-stock-score" class="text-base font-bold text-emerald-400">0점</span></div>
                 </div>
@@ -445,7 +445,7 @@ function createCard(stock, isSelected, color) {
                 </div>
                 <div class="card-detail ${isSelected ? '' : 'hidden'} mt-3 pt-3 border-t border-gray-800 overflow-hidden transition-all">
                     <div class="grid grid-cols-3 gap-2 text-center text-xs bg-gray-950 p-2.5 rounded-lg shadow-inner">
-                        <div><span class="text-gray-500 block text-[10px] mb-0.5">가격</span><span class="text-sm font-bold text-white">${stock.price}</span></div>
+                        <div><span class="text-gray-500 block text-[10px] mb-0.5">가격(KRX)</span><span class="text-sm font-bold text-white">${stock.price}</span></div>
                         <div><span class="text-gray-500 block text-[10px] mb-0.5">전일대비</span><span class="text-sm font-bold ${changeClass}">${stock.change.split(' | ')[0]}</span></div>
                         <div><span class="text-gray-500 block text-[10px] mb-0.5">AI점수</span><span class="text-sm font-bold text-emerald-400">${stock.ai_score}점</span></div>
                     </div>
