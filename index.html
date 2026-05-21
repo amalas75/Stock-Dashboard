@@ -179,21 +179,42 @@
             list.innerHTML = '';
         }
 
-        // 📊 1. 실시간 국내 외 증시 전광판 렌더링 엔진
+        // 📊 1. 실시간 국내 외 증시 전광판 렌더링 엔진 (모바일 반응형 레이아웃 적용)
         async function renderMarketIndex() {
             const container = document.getElementById('market-index-container');
+            
+            // 🎯 모바일에서는 넓게(w-full, justify-between) 퍼지고, PC에서는 좌측 정렬되도록 컨테이너 클래스 동적 수정
+            container.className = "flex w-full md:w-auto justify-between md:justify-start items-center md:space-x-6 overflow-visible mb-3 md:mb-0";
+            
             try {
                 const res = await fetch(API_BASE + "/api/market");
                 const data = await res.json();
                 if(data.kospi) {
                     const kColor = data.kospi.change.includes('▼') ? 'text-blue-400' : 'text-red-400';
                     const qColor = data.kosdaq.change.includes('▼') ? 'text-blue-400' : 'text-red-400';
+                    
                     container.innerHTML = `
-                        <div class="flex items-center space-x-2"><span class="text-gray-400 font-medium">코스피</span><span class="text-white font-bold">${data.kospi.val}</span><span class="${kColor} text-xs font-bold">${data.kospi.change}</span></div>
-                        <div class="h-4 w-px bg-gray-800"></div>
-                        <div class="flex items-center space-x-2"><span class="text-gray-400 font-medium">코스닥</span><span class="text-white font-bold">${data.kosdaq.val}</span><span class="${qColor} text-xs font-bold">${data.kosdaq.change}</span></div>
-                        <div class="h-4 w-px bg-gray-800"></div>
-                        <div class="flex items-center space-x-2"><span class="text-gray-400 font-medium">원/달러 환율</span><span class="text-emerald-400 font-bold">${data.usd.val}</span></div>
+                        <div class="flex flex-col md:flex-row items-center md:space-x-2">
+                            <span class="text-gray-400 font-medium text-[11px] md:text-sm">코스피</span>
+                            <span class="text-white font-bold text-sm md:text-base my-0.5 md:my-0">${data.kospi.val}</span>
+                            <span class="${kColor} text-[10px] md:text-xs font-bold whitespace-nowrap">${data.kospi.change}</span>
+                        </div>
+                        
+                        <div class="hidden md:block h-4 w-px bg-gray-800"></div>
+                        
+                        <div class="flex flex-col md:flex-row items-center md:space-x-2">
+                            <span class="text-gray-400 font-medium text-[11px] md:text-sm">코스닥</span>
+                            <span class="text-white font-bold text-sm md:text-base my-0.5 md:my-0">${data.kosdaq.val}</span>
+                            <span class="${qColor} text-[10px] md:text-xs font-bold whitespace-nowrap">${data.kosdaq.change}</span>
+                        </div>
+                        
+                        <div class="hidden md:block h-4 w-px bg-gray-800"></div>
+                        
+                        <div class="flex flex-col md:flex-row items-center md:space-x-2">
+                            <span class="text-gray-400 font-medium text-[11px] md:text-sm">원/달러 환율</span>
+                            <span class="text-emerald-400 font-bold text-sm md:text-base my-0.5 md:my-0">${data.usd.val}</span>
+                            <span class="opacity-0 text-[10px] md:hidden font-bold">-</span>
+                        </div>
                     `;
                 }
             } catch (e) { console.error(e); }
