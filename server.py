@@ -98,7 +98,7 @@ async def _ranking_refresh_loop():
         await asyncio.to_thread(calculate_ai_recommendation_ranking)
 
         # 👇 여기에 새로운 일일 갱신 스케줄러를 추가합니다 👇
-        async def _daily_krx_update_loop():
+async def _daily_krx_update_loop():
     """백그라운드: 24시간(86400초) 주기로 KRX 마스터 리스트를 조용히 자동 갱신합니다."""
     while True:
         await asyncio.sleep(86400)  # 24시간 대기
