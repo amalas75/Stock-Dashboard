@@ -491,21 +491,64 @@
             }, 1000);
         }
 
-        document.getElementById('stock-search-input').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') { executeSearch(); }
-        });
 
-        document.addEventListener('click', function(e) {
-            if (!e.target.closest('#search-section')) {
-                hideAutocomplete();
+// =================================================================
+// 🎯 [최종 교정] 함수 스코프 꼬임 및 이벤트 이중 충돌을 완벽히 해결한 실행 영역
+// =================================================================
+
+        // 1. 브라우저 로드가 완료되면 실행할 초기화 함수
+        function init() {
+            renderMainStockList();
+            renderSubStockList();
+            startTimer();
+        }
+
+        // 2. 검색창 입력 이벤트를 전역(Global) 공간에 안전하게 배치
+        document.getElementById('stock-search-input').addEventListener('input', function(e) {
+            if (typeof handleSearchInput === 'function') {
+                handleSearchInput(e.target.value);
+            } else {
+                console.error("🚨 handleSearchInput 함수가 아직 전역에 로드되지 않았습니다.");
             }
         });
 
-        document.getElementById('stock-search-input').addEventListener('input', function(e) {
-            handleSearchInput(e.target.value);
+        // 엔터키 입력 시 검색 실행 바인딩
+        document.getElementById('stock-search-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') { 
+                if (typeof executeSearch === 'function') {
+                    executeSearch(); 
+                }
+            }
         });
 
+        // 외부 영역 클릭 시 자동완성 창 숨기기
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('#search-section')) {
+                if (typeof hideAutocomplete === 'function') {
+                    hideAutocomplete();
+                }
+            }
+        });
+
+        // 페이지 시작 신호탄 작동
         window.onload = init;
+
+
+        // document.getElementById('stock-search-input').addEventListener('keypress', function(e) {
+        //     if (e.key === 'Enter') { executeSearch(); }
+        // });
+
+        // document.addEventListener('click', function(e) {
+        //     if (!e.target.closest('#search-section')) {
+        //         hideAutocomplete();
+        //     }
+        // });
+
+        // document.getElementById('stock-search-input').addEventListener('input', function(e) {
+        //     handleSearchInput(e.target.value);
+        // });
+
+        // window.onload = init;
     </script>
 </body>
 </html>
