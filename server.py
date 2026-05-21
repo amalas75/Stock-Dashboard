@@ -891,7 +891,7 @@ def search_local_db(keyword: str, limit: int = 15):
     cursor.execute(
         """
         SELECT code, name FROM stock_scores
-        WHERE name LIKE ? OR code LIKE ?
+        WHERE LOWER(name) LIKE ? OR code LIKE ?
         ORDER BY name LIMIT ?
         """,
         (f"%{kw}%", f"{kw}%", limit),
@@ -1064,7 +1064,7 @@ def fetch_naver_autocomplete(keyword: str, limit: int = 15):
 
 
 def resolve_code(stock_name: str, preferred_code: str = ""):
-    """종목명/코드로 네이버 증권 6자리 종목코드 조회 (ETF·특수문자 포함)."""
+    """종목명/코드로 네이버 증권 6자리 종목코드 조회 (대소문자 무방비 버전)."""
     name = stock_name.strip()
     code = (preferred_code or "").strip()
 
@@ -1073,13 +1073,14 @@ def resolve_code(stock_name: str, preferred_code: str = ""):
 
     norm_query = _normalize_name(name)
 
-    # 1) 거래상위 DB 캐시
+    # 1) 거래상위 DB 캐시 직격 (LOWER 처리)
     conn = sqlite3.connect("stock_trend.db")
     cursor = conn.cursor()
-    cursor.execute("SELECT code, name FROM stock_scores WHERE name=?", (name,))
+    # 🎯 기존 WHERE name=? 에서 LOWER(name)=? 로 변경하여 완벽하게 우회합니다.
+    cursor.execute("SELECT code, name FROM stock_scores WHERE LOWER(name)=?", (name.lower(),))
     row = cursor.fetchone()
     if not row:
-        cursor.execute("SELECT code, name FROM stock_scores WHERE name LIKE ?", (f"%{name}%",))
+        cursor.execute("SELECT code, name FROM stock_scores WHERE LOWER(name) LIKE ?", (f"%{name.lower()}%",))
         for r in cursor.fetchall():
             if _normalize_name(r[1]) == norm_query or norm_query in _normalize_name(r[1]):
                 row = r
@@ -1088,7 +1089,7 @@ def resolve_code(stock_name: str, preferred_code: str = ""):
     if row and row[0]:
         return row[0]
 
-    # 2) 네이버 증권 자동완성 (원문 + & 제거 변형)
+    # 2) 네이버 증권 자동완성 기반 코드 추적
     search_keys = list(dict.fromkeys([name, name.replace("&", ""), name.split()[0] if name else ""]))
     best_code = ""
 
@@ -1108,7 +1109,6 @@ def resolve_code(stock_name: str, preferred_code: str = ""):
             best_code = hits[0]["code"]
 
     return best_code
-
 
 def _format_ranking_response(rows, category: str):
     items = [
