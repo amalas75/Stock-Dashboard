@@ -35,15 +35,45 @@ def load_krx_master():
     url = "https://kind.krx.co.kr/corpgeneral/corpList.do?method=download&searchType=13"
     try:
         res = requests.get(url, headers=headers, timeout=10)
+        # KRX 페이지는 cp949 인코딩을 사용합니다.
         soup = BeautifulSoup(res.content, "html.parser", from_encoding="cp949")
-        krx_master_list = []
-        for tr in soup.find_all("tr")[1:]:  # 첫 줄(제목) 제외
+        
+        trs = soup.find_all("tr")
+        if not trs:
+            return
+            
+        # 🎯 [핵심] 표의 첫 줄(머리글)을 읽어서 '회사명'과 '종목코드'가 몇 번째 칸에 있는지 스스로 알아냅니다.
+        headers_text = [th.text.strip() for th in trs[0].find_all(['th', 'td'])]
+        
+        name_idx = 0
+        code_idx = 1
+        
+        for i, h in enumerate(headers_text):
+            if "회사명" in h:
+                name_idx = i
+            elif "종목코드" in h:
+                code_idx = i
+
+        temp_list = []
+        for tr in trs[1:]:
             tds = tr.find_all("td")
-            if len(tds) >= 2:
-                name = tds[0].text.strip()
-                code = tds[1].text.strip().zfill(6) # 6자리 0 채우기
-                krx_master_list.append({"code": code, "name": name, "market": "KRX"})
-        print(f"✅ [시스템] 한국거래소 상장사 {len(krx_master_list)}개 마스터 리스트 메모리 로드 완료!")
+            if len(tds) > max(name_idx, code_idx):
+                name = tds[name_idx].text.strip()
+                code_raw = tds[code_idx].text.strip()
+                
+                # '유가', '코스닥' 같은 텍스트가 섞여 들어오더라도 순수 숫자(종목코드)만 추출
+                code_clean = re.sub(r'[^0-9]', '', code_raw) 
+                
+                if code_clean:
+                    code = code_clean.zfill(6)
+                    temp_list.append({"code": code, "name": name, "market": "KRX"})
+                    
+        if temp_list:
+            krx_master_list = temp_list
+            print(f"✅ [시스템] 한국거래소 상장사 {len(krx_master_list)}개 마스터 리스트 메모리 로드 완료!")
+        else:
+            print("❌ [시스템] KRX 마스터 리스트를 파싱하지 못했습니다.")
+            
     except Exception as e:
         print(f"❌ KRX 마스터 리스트 로드 실패: {e}")
 
