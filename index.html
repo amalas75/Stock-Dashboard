@@ -159,9 +159,13 @@
 
     <script>
                 // const API_BASE = window.location.origin.includes('http') ? window.location.origin : 'http://127.0.0.1:8000';
-        const API_BASE = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost'
-            ? 'http://127.0.0.1:8000'
-            : window.location.origin;
+        // const API_BASE = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost'
+        //     ? 'http://127.0.0.1:8000'
+        //     : window.location.origin;
+
+// 🎯 주소선이 절대 꼬이지 않는 Render 다이렉트 고정 통신선
+        const API_BASE = "https://stock-dashboard-zv71.onrender.com";
+
         const RANKING_REFRESH_SEC = 300;
         let selectedMainStock = "";
         let selectedSubStock = "";
