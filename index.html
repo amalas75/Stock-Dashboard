@@ -28,7 +28,7 @@
 </head>
 <body class="bg-gray-950 text-gray-100 min-h-screen flex flex-col space-y-6 pb-12">
 
-    <header class="bg-gray-900 border-b border-gray-800 px-6 py-4 flex justify-between items-center shadow-lg sticky top-0 z-40">
+    <!-- <header class="bg-gray-900 border-b border-gray-800 px-6 py-4 flex justify-between items-center shadow-lg sticky top-0 z-40">
         <div class="flex items-center space-x-3">
             <span class="text-2xl">⚡</span>
             <h1 class="text-xl font-bold text-white tracking-wide">AI Multi-Trend Stock Dashboard</h1>
@@ -37,7 +37,23 @@
             <span class="animate-pulse h-2 w-2 rounded-full bg-emerald-400"></span>
             <span>TOP10 갱신: <span id="timer">4분 55초</span></span>
         </div>
+    </header> -->
+
+
+    <header class="bg-gray-900 border-b border-gray-800 px-4 sm:px-6 py-4 flex justify-between items-center shadow-lg sticky top-0 z-40 space-x-2">
+        <div class="flex items-center space-x-2 sm:space-x-3 min-w-0">
+            <span class="text-xl sm:text-2xl shrink-0">⚡</span>
+            <h1 class="text-xs sm:text-sm md:text-base lg:text-xl font-bold text-white tracking-wide truncate">AI Multi-Trend Stock Dashboard</h1>
+        </div>
+        <div class="flex items-center space-x-1.5 sm:space-x-2 text-xs sm:text-sm bg-gray-800 px-2.5 sm:px-3 py-1.5 rounded-full text-emerald-400 font-medium shrink-0">
+            <span class="animate-pulse h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-emerald-400"></span>
+            <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"></path>
+            </svg>
+            <span id="timer" class="font-mono">5'00"</span>
+        </div>
     </header>
+
 
     <section class="bg-gray-900/50 border-y border-gray-800 px-6 py-3 flex flex-wrap items-center justify-between text-sm mx-6 rounded-xl">
         <div class="flex items-center space-x-6 overflow-x-auto" id="market-index-container"></div>
@@ -457,7 +473,10 @@
             let distance = RANKING_REFRESH_SEC;
             setInterval(function() {
                 let m = Math.floor(distance / 60); let s = Math.floor(distance % 60);
-                document.getElementById("timer").innerHTML = m + "분 " + s + "초 ";
+                
+                document.getElementById("timer").innerHTML = `${m}'${paddedS}"`;
+                // document.getElementById("timer").innerHTML = m + "분 " + s + "초 ";
+                
                 if (--distance < 0) {
                     distance = RANKING_REFRESH_SEC;
                     renderMainStockList();
