@@ -37,24 +37,14 @@
 
     </style>
 </head>
-<body class="bg-gray-950 text-gray-100 min-h-screen flex flex-col space-y-6 pb-12">
+<body class="bg-gradient-to-br from-gray-950 via-slate-900 to-indigo-950 text-gray-100 min-h-screen flex flex-col space-y-6 pb-12">
 
-    <!-- <header class="bg-gray-900 border-b border-gray-800 px-6 py-4 flex justify-between items-center shadow-lg sticky top-0 z-40">
-        <div class="flex items-center space-x-3">
-            <span class="text-2xl">⚡</span>
-            <h1 class="text-xl font-bold text-white tracking-wide">AI Multi-Trend Stock Dashboard</h1>
-        </div>
-        <div class="flex items-center space-x-2 text-sm bg-gray-800 px-3 py-1.5 rounded-full text-emerald-400 font-medium">
-            <span class="animate-pulse h-2 w-2 rounded-full bg-emerald-400"></span>
-            <span>TOP10 갱신: <span id="timer">4분 55초</span></span>
-        </div>
-    </header> -->
+    <header class="bg-slate-900/60 backdrop-blur-md border-b border-white/5 px-4 sm:px-6 py-4 flex justify-between items-center shadow-[0_4px_30px_rgba(0,0,0,0.3)] sticky top-0 z-40 space-x-2">
 
 
-    <header class="bg-gray-900 border-b border-gray-800 px-4 sm:px-6 py-4 flex justify-between items-center shadow-lg sticky top-0 z-40 space-x-2">
         <div class="flex items-center space-x-2 sm:space-x-3 min-w-0">
-            <span class="text-xl sm:text-2xl shrink-0">⚡</span>
-            <h1 class="text-xs sm:text-sm md:text-base lg:text-xl font-bold text-white tracking-wide truncate">AI Multi-Trend Stock Dashboard</h1>
+            <div class="w-3 h-5 bg-gradient-to-b from-cyan-400 to-blue-600 rounded shadow-[0_0_10px_rgba(34,211,238,0.6)] shrink-0 animate-pulse"></div>
+            <h1 class="text-xs sm:text-sm md:text-base lg:text-xl font-black text-white tracking-widest truncate uppercase">AI Multi-Trend Stock Dashboard</h1>
         </div>
         <div class="flex items-center space-x-1.5 sm:space-x-2 text-xs sm:text-sm bg-gray-800 px-2.5 sm:px-3 py-1.5 rounded-full text-emerald-400 font-medium shrink-0">
             <span class="animate-pulse h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-emerald-400"></span>
@@ -70,19 +60,18 @@
         <div class="flex items-center space-x-6 overflow-x-auto" id="market-index-container"></div>
         <div class="text-xs text-gray-400 flex items-center space-x-1">
             <span class="inline-block w-1.5 h-1.5 rounded-full bg-blue-400 animate-ping"></span>
-            <span>시황 데이터 1분 주기 동기화 완료</span>
+            <span>시황 데이터 1분 주기 동기화 완료</span>         
+            <button onclick="openScoreGuideModal()" class="text-[11px] text-orange-400 hover:text-blue-400 transition-colors cursor-pointer select-none" style="padding-left:20px;">
+                *AI 점수 산정기준
+            </button>
         </div>
     </section>
 
+
+
     <section id="search-section" class="mx-6">
         <div class="max-w-xl relative overflow-visible flex flex-col">
-            
-            <div class="flex justify-end mb-2">
-                <button onclick="openScoreGuideModal()" class="text-[11px] text-gray-400 hover:text-blue-400 transition-colors cursor-pointer select-none">
-                    *AI 점수 산정기준
-                </button>
-            </div>
-            
+
             <div class="flex space-x-2">
                 <div class="relative flex-1 overflow-visible">
                     <input type="text" id="stock-search-input" autocomplete="off" placeholder="종목의 일부를 입력 후 드롭다운에서 선택하세요 (예: 현대, Tiger, 삼성...)" class="w-full bg-gray-900 border border-gray-800 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-all">
@@ -90,7 +79,6 @@
                 </div>
                 <button onclick="executeSearch()" class="bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold px-5 py-3 rounded-xl transition-all cursor-pointer whitespace-nowrap">검색</button>
             </div>
-
         </div>
     </section>
 
@@ -117,12 +105,18 @@
             </div>
             
             <div class="flex flex-col h-[260px]">
-                <h4 class="text-sm font-bold text-blue-400 mb-3 flex items-center">📰 관련 실시간 뉴스</h4>
+                <h4 class="text-xs font-black text-blue-400 mb-4 tracking-widest flex items-center gap-2 uppercase">
+                    <span class="w-1.5 h-3 bg-blue-500 rounded-full shadow-[0_0_8px_rgba(59,130,246,0.6)]"></span>
+                    LIVE NEWS
+                </h4>
                 <div id="res-news-list" class="flex-1 overflow-y-auto space-y-2 pr-1 custom-scrollbar"></div>
             </div>
             
             <div class="flex flex-col h-[260px]">
-                <h4 class="text-sm font-bold text-blue-400 mb-3 flex items-center">💬 Google 뉴스 · YouTube 피드</h4>
+                <h4 class="text-xs font-black text-indigo-400 mb-4 tracking-widest flex items-center gap-2 uppercase">
+                    <span class="w-1.5 h-3 bg-indigo-500 rounded-full shadow-[0_0_8px_rgba(99,102,241,0.6)]"></span>
+                    SOCIAL TREND
+                </h4>
                 <div id="res-sns-list" class="flex-1 overflow-y-auto space-y-2 pr-1 custom-scrollbar"></div>
             </div>
             
@@ -130,9 +124,12 @@
     </section>
 
     <div class="px-6">
-        <div class="border-l-4 border-blue-500 pl-3 mb-4">
-            <h2 class="text-xl font-bold text-white">🔥 종합 실시간 투자가치 TOP 10 (대형/주요주)</h2>
-            <p class="text-xs text-gray-400 mt-0.5">거래대금·등락률·Google·YouTube 감성 · <span id="main-updated-at">갱신 대기</span></p>
+        <div class="border-l-4 border-blue-500 pl-3 mb-5">
+            <h2 class="text-lg md:text-xl font-black text-white tracking-wide bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent flex items-center gap-2">
+                <span class="text-[9px] font-mono font-black bg-blue-500/10 text-blue-400 border border-blue-500/30 px-1.5 py-0.5 rounded tracking-widest shadow-[0_0_10px_rgba(59,130,246,0.15)] uppercase">MAIN</span> 
+                종합 실시간 투자가치 TOP 10 (대형/주요주)
+            </h2>
+            <p class="text-[11px] text-slate-500 mt-1 font-medium tracking-tight">거래대금 · 등락률 · Google · YouTube 감성 지표 <span class="text-slate-700">|</span> <span id="main-updated-at" class="font-mono text-slate-400">갱신 대기</span></p>
         </div>
 
         <div class="relative">
@@ -142,17 +139,23 @@
             
             <main id="main-scroll" class="flex overflow-x-auto snap-x snap-mandatory hide-scrollbar gap-4 pb-4 lg:grid lg:grid-cols-3 lg:gap-6 lg:overflow-visible lg:pb-0 scroll-smooth">
                 <section class="flex-none w-[90%] sm:w-[60%] snap-center lg:w-auto bg-gray-900 rounded-2xl p-5 border border-gray-800 h-[400px] flex flex-col shadow-inner">
-                    <div class="flex-1 overflow-y-auto space-y-2 pr-1 custom-scrollbar" id="main-stock-list"></div>
+                    <div class="flex-1 overflow-y-auto space-y-2 pr-2.5 custom-scrollbar" id="main-stock-list"></div>
                 </section>
                 
                 <section class="flex-none w-[90%] sm:w-[60%] snap-center lg:w-auto bg-gray-900 rounded-2xl p-5 border border-gray-800 h-[400px] flex flex-col">
-                    <h3 class="text-sm font-bold text-blue-400 mb-3">📰 <span id="main-news-title">종목</span> 관련 실시간 뉴스</h3>
-                    <div id="main-news-list" class="flex-1 overflow-y-auto space-y-2 pr-1 custom-scrollbar"></div>
+                    <h3 class="text-xs font-black text-blue-400 mb-4 tracking-widest flex items-center gap-2 uppercase">
+                        <span class="w-1.5 h-3 bg-blue-500 rounded-full shadow-[0_0_8px_rgba(59,130,246,0.6)]"></span>
+                        LIVE NEWS <span class="text-slate-700 font-normal">|</span> <span id="main-news-title" class="text-slate-200 font-bold tracking-normal">종목</span>
+                    </h3>
+                    <div id="main-news-list" class="flex-1 overflow-y-auto space-y-2 p-0.5 custom-scrollbar"></div>
                 </section>
-
+                
                 <section class="flex-none w-[90%] sm:w-[60%] snap-center lg:w-auto bg-gray-900 rounded-2xl p-5 border border-gray-800 h-[400px] flex flex-col">
-                    <h3 class="text-sm font-bold text-blue-400 mb-3">💬 <span id="main-sns-title">종목</span> Google·YouTube 동향</h3>
-                    <div id="main-sns-list" class="flex-1 overflow-y-auto space-y-2 pr-1 custom-scrollbar"></div>
+                    <h3 class="text-xs font-black text-indigo-400 mb-4 tracking-widest flex items-center gap-2 uppercase">
+                        <span class="w-1.5 h-3 bg-indigo-500 rounded-full shadow-[0_0_8px_rgba(99,102,241,0.6)]"></span>
+                        SOCIAL TREND <span class="text-slate-700 font-normal">|</span> <span id="main-sns-title" class="text-slate-200 font-bold tracking-normal">종목</span>
+                    </h3>
+                    <div id="main-sns-list" class="flex-1 overflow-y-auto space-y-2 p-0.5 custom-scrollbar"></div>
                 </section>
             </main>
 
@@ -178,9 +181,12 @@
     </div>
 
     <div class="px-6">
-        <div class="border-l-4 border-amber-500 pl-3 mb-4">
-            <h2 class="text-xl font-bold text-white">💰 주당 3만 원 이하 가성비 투자가치 TOP 10</h2>
-            <p class="text-xs text-gray-400 mt-0.5">거래대금·모멘텀·Google·YouTube 감성 · <span id="sub-updated-at">갱신 대기</span></p>
+        <div class="border-l-4 border-amber-500 pl-3 mb-5">
+            <h2 class="text-lg md:text-xl font-black text-white tracking-wide bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent flex items-center gap-2">
+                <span class="text-[9px] font-mono font-black bg-amber-500/10 text-amber-400 border border-amber-500/30 px-1.5 py-0.5 rounded tracking-widest shadow-[0_0_10px_rgba(245,158,11,0.15)] uppercase">VALUE</span> 
+                주당 3만 원 이하 가성비 투자가치 TOP 10
+            </h2>
+            <p class="text-[11px] text-slate-500 mt-1 font-medium tracking-tight">거래대금 · 모멘텀 · Google · YouTube 감성 지표 <span class="text-slate-700">|</span> <span id="sub-updated-at" class="font-mono text-slate-400">갱신 대기</span></p>
         </div>
 
 
@@ -195,13 +201,19 @@
                 </section>
                 
                 <section class="flex-none w-[90%] sm:w-[60%] snap-center lg:w-auto bg-gray-900 rounded-2xl p-5 border border-gray-800 h-[400px] flex flex-col">
-                    <h3 class="text-sm font-bold text-amber-400 mb-3">📰 <span id="sub-news-title">종목</span> 관련 실시간 뉴스</h3>
-                    <div id="sub-news-list" class="flex-1 overflow-y-auto space-y-2 pr-1 custom-scrollbar"></div>
+                    <h3 class="text-xs font-black text-amber-400 mb-4 tracking-widest flex items-center gap-2 uppercase">
+                        <span class="w-1.5 h-3 bg-amber-500 rounded-full shadow-[0_0_8px_rgba(245,158,11,0.6)]"></span>
+                        LIVE NEWS <span class="text-slate-700 font-normal">|</span> <span id="sub-news-title" class="text-slate-200 font-bold tracking-normal">종목</span>
+                    </h3>
+                    <div id="sub-news-list" class="flex-1 overflow-y-auto space-y-2 p-0.5 custom-scrollbar"></div>
                 </section>
 
                 <section class="flex-none w-[90%] sm:w-[60%] snap-center lg:w-auto bg-gray-900 rounded-2xl p-5 border border-gray-800 h-[400px] flex flex-col">
-                    <h3 class="text-sm font-bold text-amber-400 mb-3">💬 <span id="sub-sns-title">종목</span> Google·YouTube 동향</h3>
-                    <div id="sub-sns-list" class="flex-1 overflow-y-auto space-y-2 pr-1 custom-scrollbar"></div>
+                    <h3 class="text-xs font-black text-orange-400 mb-4 tracking-widest flex items-center gap-2 uppercase">
+                        <span class="w-1.5 h-3 bg-orange-500 rounded-full shadow-[0_0_8px_rgba(249,115,22,0.6)]"></span>
+                        SOCIAL TREND <span class="text-slate-700 font-normal">|</span> <span id="sub-sns-title" class="text-slate-200 font-bold tracking-normal">종목</span>
+                    </h3>
+                    <div id="sub-sns-list" class="flex-1 overflow-y-auto space-y-2 p-0.5 custom-scrollbar"></div>
                 </section>
             </main>
 
@@ -434,31 +446,44 @@
         }
 
 
-
-// 📌 1. 아코디언 상세정보가 내장된 스마트 카드 생성기
-function createCard(stock, isSelected, color) {
+        // 🔮 [수정] 네온 라인이 잘리지 않도록 마진(my-1.5 mx-0.5) 보정
+        function createCard(stock, isSelected, color) {
             const card = document.createElement('div');
-            card.className = `stock-card p-3 mb-2 rounded-xl cursor-pointer transition-all border ${isSelected ? `bg-gray-800 border-${color}-500 shadow-md` : 'bg-gray-900 border-gray-800 hover:border-gray-700'}`;
+            
+            const glowClass = color === 'blue' 
+                ? 'border-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.3)] bg-slate-900/90' 
+                : 'border-amber-500 shadow-[0_0_15px_rgba(245,158,11,0.3)] bg-slate-900/90';
 
-            const changeClass = stock.change.includes('▼') ? 'text-blue-400' : 'text-red-400';
+            // 🎯 mb-3를 제거하고 my-1.5 mx-0.5 추가
+            card.className = `stock-card p-4 my-1.5 mx-0.5 rounded-2xl cursor-pointer transition-all duration-300 ease-out border ${
+                isSelected 
+                ? `${glowClass} scale-[1.01]` 
+                : 'bg-slate-900/30 border-slate-800/80 hover:border-slate-700 hover:bg-slate-900/60 hover:scale-[1.002]'
+            }`;
+
+            // 일렉트릭 네온 컬러 분기
+            const isUp = !stock.change.includes('▼');
+            const changeColorClass = isUp ? 'text-pink-400 font-mono' : 'text-cyan-400 font-mono';
+            const badgeBg = isUp ? 'bg-pink-500/10 text-pink-400 border border-pink-500/20' : 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20';
             const safeCode = stock.code || '';
 
             card.innerHTML = `
                 <div class="flex items-center justify-between">
                     <div>
-                        <span class="font-medium text-white text-sm block">${stock.name}</span>
-                        <span class="text-[11px] text-gray-400">${stock.price} <span class="text-gray-600">| ${stock.ai_score}점</span></span>
+                        <span class="font-bold text-white text-sm block tracking-wide">${stock.name}</span>
+                        <span class="text-[11px] text-slate-400 font-mono mt-0.5 block">${stock.price} <span class="text-slate-600">|</span> <span class="text-emerald-400 font-bold drop-shadow-[0_0_4px_rgba(52,211,153,0.3)]">${stock.ai_score}점</span></span>
                     </div>
-                    <span class="px-2 py-0.5 rounded text-xs font-bold ${stock.status === 'up' ? 'text-red-400 bg-red-500/10' : 'text-blue-400 bg-blue-500/10'}">${stock.change}</span>
+                    <span class="px-2.5 py-1 rounded-lg text-xs font-black tracking-tighter ${badgeBg}">${stock.change}</span>
                 </div>
-                <div class="card-detail ${isSelected ? '' : 'hidden'} mt-3 pt-3 border-t border-gray-800 overflow-hidden transition-all">
-                    <div class="grid grid-cols-3 gap-2 text-center text-xs bg-gray-950 p-2.5 rounded-lg shadow-inner">
-                        <div><span class="text-gray-500 block text-[10px] mb-0.5">가격(KRX)</span><span class="text-sm font-bold text-white">${stock.price}</span></div>
-                        <div><span class="text-gray-500 block text-[10px] mb-0.5">전일대비</span><span class="text-sm font-bold ${changeClass}">${stock.change.split(' | ')[0]}</span></div>
-                        <div><span class="text-gray-500 block text-[10px] mb-0.5">AI점수</span><span class="text-sm font-bold text-emerald-400">${stock.ai_score}점</span></div>
+                
+                <div class="card-detail ${isSelected ? '' : 'hidden'} mt-4 pt-4 border-t border-slate-800/60 overflow-hidden transition-all">
+                    <div class="grid grid-cols-3 gap-2 text-center text-xs bg-slate-950/80 backdrop-blur-sm p-3 rounded-xl border border-slate-800 shadow-inner">
+                        <div><span class="text-slate-500 block text-[10px] uppercase tracking-wider mb-1">가격 (KRX)</span><span class="text-xs font-bold text-white font-mono">${stock.price}</span></div>
+                        <div><span class="text-slate-500 block text-[10px] uppercase tracking-wider mb-1">전일대비</span><span class="text-xs font-bold ${changeColorClass}">${stock.change.split(' | ')[0]}</span></div>
+                        <div><span class="text-slate-500 block text-[10px] uppercase tracking-wider mb-1">AI 밸류</span><span class="text-xs font-bold text-emerald-400 font-mono drop-shadow-[0_0_6px_rgba(52,211,153,0.5)]">${stock.ai_score}점</span></div>
                     </div>
-                    <a href="https://finance.naver.com/item/main.naver?code=${safeCode}" target="_blank" class="mt-2 block w-full text-center bg-blue-600/10 hover:bg-blue-600/20 text-blue-400 hover:text-blue-300 text-[11px] font-bold py-2 rounded-lg transition-all border border-blue-500/30">
-                        📊 실시간 차트보기 (네이버 금융)
+                    <a href="https://finance.naver.com/item/main.naver?code=${safeCode}" target="_blank" class="mt-3 block w-full text-center bg-gradient-to-r from-blue-600/20 to-indigo-600/20 hover:from-blue-600/30 hover:to-indigo-600/30 text-blue-400 hover:text-blue-300 text-[11px] font-bold py-2.5 rounded-xl transition-all border border-blue-500/20 shadow-md">
+                        📊 실시간 거래소 차트 분석선
                     </a>
                 </div>`;
             return card;
