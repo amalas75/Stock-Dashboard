@@ -75,16 +75,22 @@
     </section>
 
     <section id="search-section" class="mx-6">
-        <div class="max-w-2xl relative overflow-visible">
-            <div class="flex items-center space-x-3">
+        <div class="max-w-xl relative overflow-visible flex flex-col">
+            
+            <div class="flex justify-end mb-2">
+                <button onclick="openScoreGuideModal()" class="text-[11px] text-gray-400 hover:text-blue-400 transition-colors cursor-pointer select-none">
+                    *AI 점수 산정기준
+                </button>
+            </div>
+            
+            <div class="flex space-x-2">
                 <div class="relative flex-1 overflow-visible">
                     <input type="text" id="stock-search-input" autocomplete="off" placeholder="종목의 일부를 입력 후 드롭다운에서 선택하세요 (예: 현대, Tiger, 삼성...)" class="w-full bg-gray-900 border border-gray-800 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-all">
                     <div id="autocomplete-list" class="bg-gray-900 border border-gray-700 rounded-xl max-h-60 overflow-y-auto shadow-2xl custom-scrollbar"></div>
                 </div>
                 <button onclick="executeSearch()" class="bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold px-5 py-3 rounded-xl transition-all cursor-pointer whitespace-nowrap">검색</button>
-                
-                <button onclick="openScoreGuideModal()" class="text-xs text-gray-400 hover:text-blue-400 underline cursor-pointer whitespace-nowrap shrink-0 transition-colors">AI 점수 산정기준</button>
             </div>
+
         </div>
     </section>
 
@@ -220,7 +226,7 @@
         </main> -->
     </div>
 
-    <div id="stock-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center hidden z-50 p-4">
+    <div id="stock-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center hidden z-[1000] p-4">
         <div class="bg-gray-900 border border-gray-800 rounded-2xl w-full max-w-lg p-6 relative shadow-2xl">
             <button onclick="closeModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white text-xl">✕</button>
             <div id="modal-content"></div>
